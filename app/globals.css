@@ -1,26 +1,46 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-paper: #fbfaf8;
+  --color-ink: #16181d;
+  --color-body-text: #26282c;
+  --color-accent: #0f6f63;
+  --color-accent-dark: #0b5a50;
+  --color-accent-tint: #e4f0ee;
+  --color-panel: #efeee7;
+  --color-line: #33363b;
+  --color-code-bg: #12161a;
+  --color-code-text: #d9e4e1;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-paper: var(--color-paper);
+  --color-ink: var(--color-ink);
+  --color-body-text: var(--color-body-text);
+  --color-accent: var(--color-accent);
+  --color-accent-dark: var(--color-accent-dark);
+  --color-accent-tint: var(--color-accent-tint);
+  --color-panel: var(--color-panel);
+  --color-line: var(--color-line);
+  --color-code-bg: var(--color-code-bg);
+  --color-code-text: var(--color-code-text);
+  --font-heading: var(--font-space-grotesk);
+  --font-body: var(--font-inter);
+  --font-mono: var(--font-ibm-plex-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-body-text);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Force sharp corners everywhere, including native form-control rounding
+   some browsers apply by default. */
+*,
+button,
+input,
+textarea,
+select {
+  border-radius: 0;
 }
