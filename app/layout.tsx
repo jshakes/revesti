@@ -42,16 +42,6 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-paper text-body-text">
         <div className="flex-1 flex flex-col">{children}</div>
-        <footer className="border-t-2 border-line px-6 py-6 text-center text-sm text-body-text sm:px-10">
-          <p className="mx-auto max-w-2xl">
-            This tool is provided as-is with no warranty. Reconciliation is
-            automated, so always review the result before publishing,
-            especially when paragraphs were split, merged, or added.
-            We&apos;re not responsible for broken, incorrect, or malformed
-            results. Nothing you paste is stored. Everything runs in your
-            browser.
-          </p>
-        </footer>
       </body>
     </html>
   );

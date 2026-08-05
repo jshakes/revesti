@@ -194,6 +194,123 @@ export default function Reconciler() {
         </div>
       </form>
 
+      <section className="mt-12 border-t-2 border-line pt-8">
+        <h2 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-ink">
+          How it works
+        </h2>
+
+        <p className="mt-4 max-w-3xl text-base text-body-text">
+          Reconcile splits the plain-text translation into blocks by line
+          break: one line per paragraph, heading, or list item. It also
+          walks the HTML on the left and finds the same kind of blocks,
+          based on the tags (paragraphs, headings, list items, and similar
+          elements) rather than the wording.
+        </p>
+
+        <p className="mt-4 max-w-3xl text-base text-body-text">
+          When the number of blocks on each side matches, each block is
+          paired with the one in the same position. Any inline tags inside
+          it, such as links or bold text, are placed back into the new
+          wording at roughly the same relative position they held in the
+          original, based on character length. This is why a link near the
+          start of a sentence should still land near the start after
+          reconciling.
+        </p>
+
+        <p className="mt-4 max-w-3xl text-base text-body-text">
+          When the number of blocks does not match, for example because a
+          paragraph was split into two, two paragraphs were combined, or a
+          heading was added or removed, the tool falls back to aligning
+          blocks by comparing their lengths and choosing the overall best
+          fit. This is a length-based guess, not a reading of the actual
+          words, so it can occasionally pair the wrong blocks, particularly
+          when two unrelated sentences happen to be a similar length. A
+          warning appears above the result whenever this fallback runs.
+        </p>
+
+        <p className="mt-4 max-w-3xl text-base text-body-text">
+          One trade-off of this fallback: whenever a block is split or
+          merged, its inline tags are not carried over. Only blocks matched
+          one-to-one keep their original tags positioned inside the new
+          wording.
+        </p>
+
+        <h3 className="mt-8 text-lg font-semibold text-ink">
+          How to fix a bad result
+        </h3>
+        <p className="mt-3 max-w-3xl text-base text-body-text">
+          Most problems trace back to the block counts not matching, which
+          forces the length-based fallback instead of a certain one-to-one
+          pairing. These changes to the input fix the underlying cause
+          rather than just working around it:
+        </p>
+        <ul className="mt-3 max-w-3xl list-disc space-y-3 pl-5 text-base text-body-text">
+          <li>
+            <span className="font-semibold text-ink">
+              Make the line count match the block count.
+            </span>{" "}
+            Count the paragraphs, headings, and list items in the HTML on
+            the left, then edit the plain text on the right so it has
+            exactly that many lines, in the same order, one block per line.
+            This is the single most reliable fix: when the counts match
+            exactly, every block is paired with certainty and its tags are
+            preserved. It is worth doing even if it means putting a merged
+            or split sentence back the way the original was structured.
+          </li>
+          <li>
+            <span className="font-semibold text-ink">
+              Join soft-wrapped paragraphs back into one line.
+            </span>{" "}
+            Text pasted from Word, Google Docs, or a spreadsheet cell often
+            carries a line break in the middle of a paragraph that was
+            never meant to be a real break. Delete that line break so the
+            whole paragraph is on one line, or the aligner will treat it as
+            two separate blocks.
+          </li>
+          <li>
+            <span className="font-semibold text-ink">
+              Keep a block with a link or bold text unsplit.
+            </span>{" "}
+            Inline tags only carry over on a one-to-one match. If a
+            paragraph containing a link gets split or merged, the link is
+            dropped from that block. Leave that paragraph as a single line
+            in the translation, or add the link back into the result by
+            hand afterward.
+          </li>
+          <li>
+            <span className="font-semibold text-ink">
+              Reorder lines if two blocks got swapped.
+            </span>{" "}
+            This happens when two unrelated lines are a similar length. Move
+            the plain-text lines so they sit in the same order as their
+            matching blocks in the HTML, rather than relying on the aligner
+            to guess correctly.
+          </li>
+          <li>
+            <span className="font-semibold text-ink">
+              Check for a missing wrapper tag.
+            </span>{" "}
+            If a piece of text in Step 1 is not becoming its own block,
+            confirm it is actually inside a paragraph, heading, or list tag.
+            Bare text with no wrapping tag cannot be matched to anything.
+          </li>
+          <li>
+            <span className="font-semibold text-ink">
+              Split large pastes into smaller passes.
+            </span>{" "}
+            If the input is long enough that mismatches are hard to track
+            down, reconcile it in smaller sections, a few blocks at a time,
+            rather than the whole document at once.
+          </li>
+        </ul>
+
+        <p className="mt-6 max-w-3xl text-base font-medium text-ink">
+          Because the alignment is based on length and position rather than
+          meaning, read through the result before pasting it into your CMS,
+          particularly on any block called out by a warning.
+        </p>
+      </section>
+
       {status === "error" && (
         <div
           role="alert"
