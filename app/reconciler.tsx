@@ -194,6 +194,67 @@ export default function Reconciler() {
         </div>
       </form>
 
+      {status === "error" && (
+        <div
+          role="alert"
+          className="mt-6 border-2 border-red-700 bg-red-50 px-4 py-3 text-base text-red-900"
+        >
+          <p>{errorMessage}</p>
+          <button
+            type="button"
+            onClick={submit}
+            className="mt-2 font-semibold underline underline-offset-2"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {result && (
+        <div className="mt-10">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-base font-semibold text-ink">
+              Result: copy this into your CMS
+            </span>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-900">
+                Automated. Check it before you publish.
+              </span>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="border-2 border-accent bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                {copied ? "Copied ✓" : "Copy to clipboard"}
+              </button>
+            </div>
+          </div>
+
+          {warnings.length > 0 && (
+            <ul className="mb-2 list-disc space-y-1 bg-amber-50 px-6 py-3 text-sm text-amber-900">
+              {warnings.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          )}
+
+          <textarea
+            readOnly
+            value={result}
+            aria-label="Reconciled HTML output"
+            rows={10}
+            className="w-full resize-y border-2 border-line bg-code-bg p-3 font-[family-name:var(--font-mono)] text-sm text-code-text outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent"
+          />
+
+          <details className="mt-4 border-2 border-line">
+            <summary className="cursor-pointer select-none px-3 py-2 text-base font-semibold text-ink hover:text-accent">
+              Show diff from original HTML
+            </summary>
+            <DiffView before={inputA} after={result} />
+          </details>
+        </div>
+      )}
+
       <section className="mt-12 border-t-2 border-line pt-8">
         <h2 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-ink">
           How it works
@@ -310,67 +371,6 @@ export default function Reconciler() {
           particularly on any block called out by a warning.
         </p>
       </section>
-
-      {status === "error" && (
-        <div
-          role="alert"
-          className="mt-6 border-2 border-red-700 bg-red-50 px-4 py-3 text-base text-red-900"
-        >
-          <p>{errorMessage}</p>
-          <button
-            type="button"
-            onClick={submit}
-            className="mt-2 font-semibold underline underline-offset-2"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      {result && (
-        <div className="mt-10">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-            <span className="text-base font-semibold text-ink">
-              Result: copy this into your CMS
-            </span>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-900">
-                Automated. Check it before you publish.
-              </span>
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="border-2 border-accent bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark focus-visible:ring-2 focus-visible:ring-accent"
-              >
-                {copied ? "Copied ✓" : "Copy to clipboard"}
-              </button>
-            </div>
-          </div>
-
-          {warnings.length > 0 && (
-            <ul className="mb-2 list-disc space-y-1 bg-amber-50 px-6 py-3 text-sm text-amber-900">
-              {warnings.map((w, i) => (
-                <li key={i}>{w}</li>
-              ))}
-            </ul>
-          )}
-
-          <textarea
-            readOnly
-            value={result}
-            aria-label="Reconciled HTML output"
-            rows={10}
-            className="w-full resize-y border-2 border-line bg-code-bg p-3 font-[family-name:var(--font-mono)] text-sm text-code-text outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent"
-          />
-
-          <details className="mt-4 border-2 border-line">
-            <summary className="cursor-pointer select-none px-3 py-2 text-base font-semibold text-ink hover:text-accent">
-              Show diff from original HTML
-            </summary>
-            <DiffView before={inputA} after={result} />
-          </details>
-        </div>
-      )}
     </main>
   );
 }
