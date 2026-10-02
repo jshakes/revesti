@@ -55,7 +55,12 @@ export default function Reconciler() {
   const [inputA, setInputA] = useState("");
   const [inputB, setInputB] = useState("");
   const [status, setStatus] = useState<Status>("idle");
-  const [result, setResult] = useState("");
+  // null until the first successful reconcile; the user can edit it freely
+  // afterwards (including clearing it) without the result pane disappearing.
+  const [result, setResult] = useState<string | null>(null);
+  // The last output reconcile() produced, so we can tell whether the user
+  // has edited the result pane since.
+  const [generatedResult, setGeneratedResult] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [copied, setCopied] = useState(false);
@@ -70,6 +75,14 @@ export default function Reconciler() {
   const looksLikeHtmlInB = useMemo(() => HTML_LIKE.test(inputB), [inputB]);
 
   async function submit() {
+    if (
+      result !== generatedResult &&
+      !window.confirm(
+        "You've edited the result. Reconciling again will replace your edits. Continue?",
+      )
+    ) {
+      return;
+    }
     setStatus("loading");
     setErrorMessage("");
     // Yield a tick so the loading state can paint before the (synchronous)
@@ -78,6 +91,7 @@ export default function Reconciler() {
     try {
       const { html, warnings: w } = reconcile(inputA, inputB);
       setResult(html);
+      setGeneratedResult(html);
       setWarnings(w);
       setStatus("success");
     } catch (err) {
@@ -98,7 +112,7 @@ export default function Reconciler() {
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(result);
+      await navigator.clipboard.writeText(result ?? "");
       setCopied(true);
       if (copyTimeout.current) clearTimeout(copyTimeout.current);
       copyTimeout.current = setTimeout(() => setCopied(false), 2000);
@@ -210,11 +224,11 @@ export default function Reconciler() {
         </div>
       )}
 
-      {result && (
+      {result !== null && (
         <div className="mt-10">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
             <span className="text-base font-semibold text-ink">
-              Result: copy this into your CMS
+              Result: edit if needed, then copy this into your CMS
             </span>
             <div className="flex flex-wrap items-center gap-3">
               <span className="bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-900">
@@ -239,8 +253,8 @@ export default function Reconciler() {
           )}
 
           <textarea
-            readOnly
             value={result}
+            onChange={(e) => setResult(e.target.value)}
             aria-label="Reconciled HTML output"
             rows={10}
             className="w-full resize-y border-2 border-line bg-code-bg p-3 font-[family-name:var(--font-mono)] text-sm text-code-text outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent"

@@ -174,6 +174,85 @@ describe("copy to clipboard", () => {
     expect(writeTextMock).toHaveBeenCalledWith("<p>Bonjour.</p>");
     expect(await screen.findByText(/copied/i)).toBeInTheDocument();
   });
+
+  test("copies the edited content when the result has been changed", async () => {
+    const { user, inputA, inputB, submitButton } = setup();
+    await user.type(inputA, "<p>Hello.</p>");
+    await user.type(inputB, "Bonjour.");
+    await user.click(submitButton);
+    const output = await screen.findByLabelText(/reconciled html output/i);
+
+    await user.clear(output);
+    await user.type(output, "<p>Salut tout le monde.</p>");
+    expect(output).toHaveValue("<p>Salut tout le monde.</p>");
+
+    const writeTextMock = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: writeTextMock },
+      configurable: true,
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: /copy to clipboard/i }),
+    );
+    expect(writeTextMock).toHaveBeenCalledWith("<p>Salut tout le monde.</p>");
+  });
+
+  test("keeps the result pane visible when its content is cleared", async () => {
+    const { user, inputA, inputB, submitButton } = setup();
+    await user.type(inputA, "<p>Hello.</p>");
+    await user.type(inputB, "Bonjour.");
+    await user.click(submitButton);
+    const output = await screen.findByLabelText(/reconciled html output/i);
+
+    await user.clear(output);
+    expect(screen.getByLabelText(/reconciled html output/i)).toHaveValue("");
+    expect(
+      screen.getByRole("button", { name: /copy to clipboard/i }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("overwriting edits", () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  async function reconcileAndEdit() {
+    const ctx = setup();
+    await ctx.user.type(ctx.inputA, "<p>Hello.</p>");
+    await ctx.user.type(ctx.inputB, "Bonjour.");
+    await ctx.user.click(ctx.submitButton);
+    const output = await screen.findByLabelText(/reconciled html output/i);
+    return { ...ctx, output };
+  }
+
+  test("does not prompt when the result has not been edited", async () => {
+    const confirmSpy = jest.spyOn(window, "confirm");
+    const { user, submitButton } = await reconcileAndEdit();
+    await user.click(submitButton);
+    expect(confirmSpy).not.toHaveBeenCalled();
+  });
+
+  test("keeps edits when the user cancels the prompt", async () => {
+    const confirmSpy = jest.spyOn(window, "confirm").mockReturnValue(false);
+    const { user, submitButton, output } = await reconcileAndEdit();
+    await user.type(output, " edited");
+    await user.click(submitButton);
+
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(output).toHaveValue("<p>Bonjour.</p> edited");
+  });
+
+  test("replaces edits when the user confirms the prompt", async () => {
+    const confirmSpy = jest.spyOn(window, "confirm").mockReturnValue(true);
+    const { user, submitButton, output } = await reconcileAndEdit();
+    await user.type(output, " edited");
+    await user.click(submitButton);
+
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(await screen.findByLabelText(/reconciled html output/i)).toHaveValue(
+      "<p>Bonjour.</p>",
+    );
+  });
 });
 
 describe("diff view", () => {
